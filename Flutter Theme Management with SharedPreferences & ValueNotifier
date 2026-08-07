@@ -1,0 +1,360 @@
+# App Theme (Light & Dark)
+
+## Videos Completed
+
+- Create Light and Dark Theme
+- Text Theme Data
+- Input Decoration Theme
+- Color Scheme
+- Fix Theme (Light & Dark)
+- ValueNotifier
+- SharedPreferences with Theming
+- ThemeController
+- Theme with isDark Method
+
+---
+
+# Practical Implementation
+
+بهذا الجزء من المشروع اشتغلنا على إضافة نظام كامل للـ Light Theme والـ Dark Theme بحيث المستخدم يقدر يغير شكل التطبيق بأي وقت، ويضل نفس الاختيار محفوظ حتى بعد ما يسكر التطبيق ويفتحه مرة ثانية.
+
+أول خطوة كانت إنشاء ملفين منفصلين للثيم:
+
+- `light_theme.dart`
+- `dark_theme.dart`
+
+الهدف من هيك إنه كل إعدادات التصميم تكون موجودة بمكان واحد، وما نضطر كل مرة ندور داخل كل شاشة ونغير الألوان يدوي. صار كل Theme مسؤول عن الألوان، الخطوط، شكل الـ AppBar، شكل الـ TextField، الكروت، والـ Divider.
+
+بعدها تم ربط هذول الملفين داخل `MaterialApp` باستخدام:
+
+```dart
+theme: lightTheme,
+darkTheme: darkTheme,
+themeMode: ThemeMode.light,
+```
+
+بعد ما صار التطبيق يعرف الثيمين، بدأنا نعدل جميع الشاشات حتى تعتمد على الـ Theme بدل الألوان الثابتة.
+
+بالبداية كان أغلب الكود مكتوب بالطريقة التالية:
+
+```dart
+Colors.black
+Colors.white
+Colors.grey
+```
+
+المشكلة بهاي الطريقة إنها ما بتتغير لما المستخدم يحول على Dark Mode، فلو كان لون النص أسود رح يضل أسود حتى لو الخلفية صارت سودا، وبالتالي النص يختفي.
+
+عشان هيك بدأنا نستبدل جميع الألوان باستخدام:
+
+```dart
+Theme.of(context)
+```
+
+وبدل ما نجيب اللون مباشرة، صار كل Widget يقرأ اللون من الـ Theme الحالي.
+
+بعدها تعرفنا على `TextTheme`، والهدف منه إنه بدل ما نكتب:
+
+```dart
+TextStyle(
+  fontSize: ...,
+  color: ...,
+  fontWeight: ...
+)
+```
+
+بكل شاشة، صار في Theme واحد مسؤول عن جميع النصوص، وأي تعديل على الخط أو اللون أو الحجم بصير من مكان واحد فقط.
+
+بعدها انتقلنا لـ `InputDecorationTheme`، والهدف منه توحيد شكل جميع الـ TextFields داخل التطبيق.
+
+بدل ما نعيد كتابة:
+
+- Border
+- Hint Style
+- Fill Color
+- Radius
+- Focus Border
+
+داخل كل TextField، صارت هاي الإعدادات موجودة داخل الـ Theme، وبالتالي أي TextField جديد رح ياخذ نفس التصميم تلقائياً.
+
+بعدها تعرفنا على `ColorScheme`.
+
+هاي تعتبر من أهم الأشياء الموجودة داخل ThemeData لأنها بتوفر مجموعة ألوان أساسية للتطبيق مثل:
+
+- Primary
+- Secondary
+- Surface
+- OnSurface
+
+وبدل ما نستخدم ألوان ثابتة، صار التطبيق يعتمد على ColorScheme حتى تكون الألوان متناسقة مع الـ Light والـ Dark Theme بنفس الوقت.
+
+بعدها بدأنا نعدل كل Widget داخل المشروع.
+
+مثل:
+
+- Home Screen
+- Profile Screen
+- Welcome Screen
+- Progress Card
+- Home Header
+- Task Card
+- User Details
+
+وكل Widget صار يعتمد على الـ Theme بدل الألوان الثابتة.
+
+بعدها أضفنا Switch داخل شاشة الـ Profile.
+
+وظيفة الـ Switch إنه يسمح للمستخدم يبدل بين Light و Dark Mode مباشرة بدون إعادة تشغيل التطبيق.
+
+لكن ظهرت مشكلة، وهي إنه بمجرد ما نسكر التطبيق ويرجع يفتح، كان يرجع دائماً على Light Mode.
+
+لحل هاي المشكلة استخدمنا `SharedPreferences`.
+
+صار كل مرة المستخدم يغير قيمة الـ Switch يتم تخزين:
+
+```text
+darkMode = true
+```
+
+أو
+
+```text
+darkMode = false
+```
+
+ولما التطبيق يفتح داخل `main.dart`، بنقرأ هاي القيمة، وبناءً عليها بنحدد:
+
+```dart
+ThemeMode.dark
+```
+
+أو
+
+```dart
+ThemeMode.light
+```
+
+بعدها تعرفنا على `ValueNotifier`.
+
+قبل ValueNotifier كان تغيير الثيم يعتمد على `setState()`، وهذا معناه إنه الـ Widget نفسها هي المسؤولة عن إعادة البناء.
+
+أما باستخدام ValueNotifier صار في Object واحد مسؤول عن قيمة الثيم، وأي Widget بتراقبه بتتحدث مباشرة بمجرد تغيير القيمة.
+
+يعني بدل ما نستخدم:
+
+```dart
+setState(() {});
+```
+
+صار يكفي نغير:
+
+```dart
+themeNotifier.value
+```
+
+وباقي التطبيق يتحدث تلقائياً.
+
+آخر Concept تعرفنا عليه كان `ThemeController`.
+
+وظيفته الأساسية تنظيم الكود.
+
+بدل ما شاشة الـ Profile تحتوي كود حفظ SharedPreferences وكود تغيير ThemeMode بنفسها، صار ممكن نستدعي:
+
+```dart
+ThemeController.changeTheme(...)
+```
+
+ويكون الـ Controller هو المسؤول عن تنفيذ كل العمليات.
+
+هاي الطريقة بتخلي الـ UI مسؤول فقط عن العرض، بينما أي Logic متعلق بالثيم يكون داخل Controller منفصل.
+
+---
+
+# Important Concepts
+
+- ThemeData
+- ThemeMode
+- Light Theme
+- Dark Theme
+- TextTheme
+- InputDecorationTheme
+- ColorScheme
+- CardTheme
+- DividerTheme
+- Theme.of(context)
+- ValueNotifier
+- ValueListenableBuilder
+- SharedPreferences
+- ThemeController
+
+---
+
+# Problems Faced
+
+## المشكلة الأولى
+
+بعد تفعيل الـ Dark Theme لاحظت إنه كثير من النصوص ظلت سوداء.
+
+### السبب
+
+لأنها كانت تعتمد على:
+
+```dart
+Colors.black
+```
+
+وليس على الـ Theme.
+
+### الحل
+
+تم استبدال جميع الألوان الثابتة باستخدام:
+
+```dart
+Theme.of(context)
+```
+
+أو
+
+```dart
+textTheme
+```
+
+حتى تتغير تلقائياً حسب الثيم الحالي.
+
+---
+
+## المشكلة الثانية
+
+بعض الـ Cards ظلت بيضاء داخل الـ Dark Theme.
+
+### السبب
+
+لأن لون الـ Container كان ثابت داخل الـ Widget.
+
+### الحل
+
+تم استخدام:
+
+```dart
+Theme.of(context).cardTheme.color
+```
+
+بدل لون ثابت.
+
+---
+
+## المشكلة الثالثة
+
+ألوان الـ TextField كانت مناسبة للـ Light Theme فقط.
+
+### السبب
+
+وجود Fill Color و Hint Style داخل الـ TextField نفسه.
+
+### الحل
+
+تم نقل جميع إعدادات الـ TextField إلى:
+
+```text
+InputDecorationTheme
+```
+
+حتى جميع الحقول تستخدم نفس التصميم.
+
+---
+
+## المشكلة الرابعة
+
+الثيم كان يرجع Light بمجرد إعادة تشغيل التطبيق.
+
+### السبب
+
+عدم حفظ حالة الـ Switch.
+
+### الحل
+
+تم استخدام SharedPreferences لحفظ قيمة darkMode ثم قراءتها عند تشغيل التطبيق.
+
+---
+
+## المشكلة الخامسة
+
+ظهرت أخطاء أثناء تجربة ThemeController.
+
+### السبب
+
+عدم وجود دوال مثل:
+
+- getBool()
+- setBool()
+
+داخل SharedPrefService.
+
+### الحل
+
+تم إضافة الدوال المطلوبة أو استخدام الطريقة السابقة حسب هيكلة المشروع.
+# Questions & Answers
+
+## 1. ليش استخدمنا ThemeData بدل ما نكتب الألوان داخل كل شاشة؟
+
+لو كل شاشة كان فيها ألوانها الخاصة، كان أي تعديل بسيط بالمستقبل يحتاج نفتح كل الملفات ونغير نفس اللون أكثر من مرة، وهذا مع زيادة حجم المشروع بصير متعب وسهل ننسى مكان معين. باستخدام `ThemeData` صار كل التصميم موجود بمكان واحد، وأي تعديل على لون أو خط أو شكل الـ AppBar أو الـ TextField بصير من ملف واحد، وجميع الشاشات تتحدث تلقائياً.
+
+---
+
+## 2. ليش استخدمنا Theme.of(context) بدل Colors.black أو Colors.white؟
+
+لأن الألوان الثابتة ما بتعرف إذا التطبيق شغال على Light أو Dark Theme، فهي رح تضل نفس اللون دائماً. أما `Theme.of(context)` فهو بقرأ الثيم الحالي وبيرجع اللون المناسب تلقائياً، وهيك ما منضطر نعمل شروط بكل Widget حتى نعرف أي لون نستخدم.
+
+---
+
+## 3. ليش استخدمنا ColorScheme مع إنه كنا نقدر نستخدم Colors؟
+
+`ColorScheme` عبارة عن مجموعة ألوان مترابطة داخل الـ Theme، وكل لون فيها إله وظيفة معينة مثل `primary` و `surface` و `onSurface`. لما نعتمد عليه بصير التطبيق كله متناسق، وما بصير كل Widget يستخدم لون مختلف بدون سبب. كمان إذا غيرنا الثيم، كل هاي الألوان بتتغير تلقائياً بدون تعديل الكود.
+
+---
+
+## 4. ليش استخدمنا SharedPreferences مع الثيم؟
+
+لأنه بدون الحفظ، الثيم رح يتغير فقط أثناء تشغيل التطبيق. أول ما المستخدم يسكر التطبيق ويفتحه مرة ثانية، رح يرجع دائماً على Light Theme. باستخدام `SharedPreferences` صرنا نخزن آخر اختيار للمستخدم ونسترجعه عند تشغيل التطبيق، وهيك المستخدم بحس إن التطبيق حافظ إعداداته.
+
+---
+
+## 5. شو الفرق بين setState و ValueNotifier؟ وليش استخدمنا ValueNotifier؟
+
+`setState()` بتعيد بناء الـ Widget اللي استدعيناها منها، لذلك لازم يكون الكود داخل StatefulWidget، وكل مرة نحتاج نغير القيمة لازم نستدعي `setState()`. أما `ValueNotifier` فهو عبارة عن Object بيحمل قيمة، وأي Widget بتراقبه باستخدام `ValueListenableBuilder` رح تتحدث تلقائياً بمجرد تغيير القيمة، بدون الحاجة نكتب `setState()` بكل مرة. هاي الطريقة أنظف وأسهل إذا في أكثر من Widget تعتمد على نفس القيمة.
+
+---
+
+## 6. ليش تعرفنا على ThemeController مع إنه قدرنا نغير الثيم بدونه؟
+
+الهدف من `ThemeController` مش إضافة ميزة جديدة، وإنما تنظيم الكود. بداله ما شاشة الـ Profile تحتوي كود الحفظ داخل `SharedPreferences` وكود تغيير الثيم بنفسها، بصير كل هذا موجود داخل Controller واحد. الشاشة بتستدعي دالة مثل:
+
+```dart
+ThemeController.changeTheme(value);
+```
+
+وباقي الشغل بصير داخل الـ Controller. هيك لو احتجنا نعدل طريقة تغيير الثيم مستقبلاً، منعدلها من مكان واحد فقط.
+
+---
+
+## 7. ليش نقلنا إعدادات الـ TextField إلى InputDecorationTheme؟
+
+بالبداية كان كل `TextField` يحتوي على نفس الكود الخاص بالـ Border والـ Radius والـ Hint Style والـ Fill Color. هذا يعني تكرار كبير بالكود، وأي تعديل لازم نعيده بكل شاشة. باستخدام `InputDecorationTheme` صار كل `TextField` ياخذ نفس التصميم تلقائياً، وإذا حبينا نغير شكل الحقول مستقبلاً منعدل ملف الثيم فقط، وجميع الحقول تتحدث مباشرة.
+
+---
+
+# Result
+
+بنهاية التطبيق صار المشروع يدعم بشكل كامل:
+
+- Light Theme.
+- Dark Theme.
+- تغيير الثيم أثناء تشغيل التطبيق.
+- حفظ آخر Theme داخل SharedPreferences.
+- استرجاع الثيم عند تشغيل التطبيق.
+- توحيد تصميم النصوص باستخدام TextTheme.
+- توحيد تصميم TextFields باستخدام InputDecorationTheme.
+- توحيد ألوان التطبيق باستخدام ColorScheme.
+- التخلص من أغلب الألوان الثابتة داخل الشاشات.
+- التعرف على ValueNotifier لتحديث الثيم بشكل مباشر.
+- التعرف على ThemeController لتنظيم منطق تغيير الثيم وفصل الـ Logic عن واجهة المستخدم.
